@@ -18,9 +18,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Habit } from '@/lib/types';
 import { useEffect } from 'react';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Sparkles, GlassWater, BookOpen, Sunrise, Footprints, Pencil, Dumbbell, Bike, BrainCircuit, Leaf, BedDouble, Apple } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const editHabitSchema = z.object({
   name: z.string().min(3, { message: 'Habit name must be at least 3 characters.' }),
+  icon: z.string().default('sparkles'),
   trackProgress: z.boolean().default(false),
   trackFrequency: z.boolean().default(false),
   target: z.coerce.number().min(1).optional(),
@@ -47,6 +51,21 @@ const editHabitSchema = z.object({
 
 export type EditHabitFormData = z.infer<typeof editHabitSchema>;
 
+const availableIcons = [
+    { name: 'sparkles', component: Sparkles },
+    { name: 'glass-water', component: GlassWater },
+    { name: 'book-open', component: BookOpen },
+    { name: 'sunrise', component: Sunrise },
+    { name: 'footprints', component: Footprints },
+    { name: 'pencil', component: Pencil },
+    { name: 'dumbbell', component: Dumbbell },
+    { name: 'bike', component: Bike },
+    { name: 'brain-circuit', component: BrainCircuit },
+    { name: 'leaf', component: Leaf },
+    { name: 'bed-double', component: BedDouble },
+    { name: 'apple', component: Apple },
+];
+
 interface EditHabitDialogProps {
   habit: Habit;
   onEditHabit: (data: Habit) => void;
@@ -60,6 +79,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
     resolver: zodResolver(editHabitSchema),
     defaultValues: {
       name: habit.name || '',
+      icon: habit.icon || 'sparkles',
       trackProgress: habit.target !== undefined,
       trackFrequency: habit.frequency !== undefined,
       target: habit.target,
@@ -71,6 +91,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
   useEffect(() => {
     form.reset({
         name: habit.name || '',
+        icon: habit.icon || 'sparkles',
         trackProgress: habit.target !== undefined,
         trackFrequency: habit.frequency !== undefined,
         target: habit.target,
@@ -83,6 +104,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
     const updatedHabit: Habit = {
         ...habit,
         name: values.name,
+        icon: values.icon,
         target: values.trackProgress ? values.target : undefined,
         currentProgress: values.trackProgress ? habit.currentProgress || 0 : undefined,
         unit: values.trackProgress ? values.unit : (values.trackFrequency ? 'times' : undefined),
@@ -135,6 +157,38 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
                     <FormMessage />
                     </FormItem>
                 )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="icon"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Choose an Icon</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2"
+                        >
+                          {availableIcons.map((icon) => (
+                            <FormItem key={icon.name} className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value={icon.name} className="sr-only" />
+                              </FormControl>
+                              <FormLabel className={cn(
+                                "p-2 rounded-md cursor-pointer sketch-border interactive-sketch-border transition-colors",
+                                field.value === icon.name ? 'bg-primary/80 text-primary-foreground' : 'bg-background hover:bg-muted'
+                              )}>
+                                <icon.component className="w-6 h-6" />
+                              </FormLabel>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
                 
                 <div className="space-y-3">

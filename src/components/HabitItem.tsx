@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Flame, GlassWater, BookOpen, Sunrise, Footprints, Pencil, Sparkles, Plus, Repeat, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Check, Flame, GlassWater, BookOpen, Sunrise, Footprints, Pencil, Sparkles, Plus, Repeat, MoreVertical, Edit, Trash2, Dumbbell, Bike, BrainCircuit, Leaf, BedDouble, Apple } from 'lucide-react';
 import type { Habit } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -19,7 +19,13 @@ const iconMap: { [key: string]: React.ElementType } = {
   'sunrise': Sunrise,
   'footprints': Footprints,
   'pencil': Pencil,
-  'sparkles': Sparkles
+  'sparkles': Sparkles,
+  'dumbbell': Dumbbell,
+  'bike': Bike,
+  'brain-circuit': BrainCircuit,
+  'leaf': Leaf,
+  'bed-double': BedDouble,
+  'apple': Apple,
 };
 
 const SimpleCheckbox = ({ checked, onToggle }: { checked: boolean, onToggle: () => void }) => (
@@ -98,7 +104,7 @@ export default function HabitItem({
       
       <div className="flex-grow space-y-2">
         <div className="flex justify-between items-start">
-            <div className="pr-8">
+            <div className="pr-2">
                 <p className="font-body font-semibold text-lg">{habit.name}</p>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
@@ -111,7 +117,27 @@ export default function HabitItem({
                   </div>
                 </div>
             </div>
-             {isSimpleHabit && <SimpleCheckbox checked={habit.completed} onToggle={() => onSimpleToggle(habit.id)} />}
+             <div className="flex items-center gap-2 flex-shrink-0">
+                {isSimpleHabit && <SimpleCheckbox checked={habit.completed} onToggle={() => onSimpleToggle(habit.id)} />}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(habit)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Edit</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDelete(habit.id)} className="text-destructive focus:text-destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </div>
         
         <div className="space-y-3">
@@ -119,26 +145,6 @@ export default function HabitItem({
           {isFrequencyHabit && <FrequencyTracker habit={habit} onUpdate={onUpdateProgress} />}
         </div>
         
-      </div>
-       <div className="flex-shrink-0">
-         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(habit)}>
-              <Edit className="mr-2 h-4 w-4" />
-              <span>Edit</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(habit.id)} className="text-destructive focus:text-destructive">
-              <Trash2 className="mr-2 h-4 w-4" />
-              <span>Delete</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
     </motion.div>
   );

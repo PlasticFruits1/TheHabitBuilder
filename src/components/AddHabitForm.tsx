@@ -6,13 +6,16 @@ import * as z from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus } from 'lucide-react';
+import { Plus, Sparkles, GlassWater, BookOpen, Sunrise, Footprints, Pencil, Dumbbell, Bike, BrainCircuit, Leaf, BedDouble, Apple } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { cn } from '@/lib/utils';
 
 const addHabitSchema = z.object({
   name: z.string().min(3, { message: 'Habit name must be at least 3 characters.' }),
+  icon: z.string().default('sparkles'),
   trackProgress: z.boolean().default(false),
   trackFrequency: z.boolean().default(false),
   target: z.coerce.number().min(1).optional(),
@@ -38,6 +41,21 @@ const addHabitSchema = z.object({
 
 export type AddHabitFormData = z.infer<typeof addHabitSchema>;
 
+const availableIcons = [
+    { name: 'sparkles', component: Sparkles },
+    { name: 'glass-water', component: GlassWater },
+    { name: 'book-open', component: BookOpen },
+    { name: 'sunrise', component: Sunrise },
+    { name: 'footprints', component: Footprints },
+    { name: 'pencil', component: Pencil },
+    { name: 'dumbbell', component: Dumbbell },
+    { name: 'bike', component: Bike },
+    { name: 'brain-circuit', component: BrainCircuit },
+    { name: 'leaf', component: Leaf },
+    { name: 'bed-double', component: BedDouble },
+    { name: 'apple', component: Apple },
+];
+
 interface AddHabitFormProps {
   onAddHabit: (data: AddHabitFormData) => void;
 }
@@ -47,6 +65,7 @@ export default function AddHabitForm({ onAddHabit }: AddHabitFormProps) {
     resolver: zodResolver(addHabitSchema),
     defaultValues: {
       name: '',
+      icon: 'sparkles',
       trackProgress: false,
       trackFrequency: false,
     },
@@ -86,6 +105,38 @@ export default function AddHabitForm({ onAddHabit }: AddHabitFormProps) {
                       className="sketch-border text-base"
                       {...field}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="icon"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Choose an Icon</FormLabel>
+                   <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 gap-2"
+                    >
+                      {availableIcons.map((icon) => (
+                        <FormItem key={icon.name} className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value={icon.name} className="sr-only" />
+                          </FormControl>
+                          <FormLabel className={cn(
+                            "p-2 rounded-md cursor-pointer sketch-border interactive-sketch-border transition-colors",
+                            field.value === icon.name ? 'bg-primary/80 text-primary-foreground' : 'bg-background hover:bg-muted'
+                          )}>
+                            <icon.component className="w-6 h-6" />
+                          </FormLabel>
+                        </FormItem>
+                      ))}
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,7 +188,7 @@ export default function AddHabitForm({ onAddHabit }: AddHabitFormProps) {
             <AnimatePresence>
             {trackProgress && (
                 <motion.div 
-                    key="progress-tracker"
+                    key="progress-tracker-add"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
@@ -174,7 +225,7 @@ export default function AddHabitForm({ onAddHabit }: AddHabitFormProps) {
 
             {trackFrequency && (
                  <motion.div
-                    key="frequency-tracker"
+                    key="frequency-tracker-add"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}

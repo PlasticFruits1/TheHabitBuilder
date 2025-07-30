@@ -177,7 +177,7 @@ export default function Home() {
     const newHabit: Habit = {
       id: habits.length > 0 ? Math.max(...habits.map(h => h.id)) + 1 : 1,
       name: data.name,
-      icon: 'sparkles',
+      icon: data.icon,
       points: 10,
       streak: 0,
       completed: false,
@@ -213,7 +213,7 @@ export default function Home() {
   }
 
   const handleAddSimpleHabit = (name: string) => {
-    handleAddHabit({ name, trackProgress: false, trackFrequency: false });
+    handleAddHabit({ name, icon: 'sparkles', trackProgress: false, trackFrequency: false });
   }
 
   const handleDeleteHabit = (id: number) => {
