@@ -1,23 +1,20 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { Habit, GardenItem } from '@/lib/types';
-import { initialHabits, initialGardenItems } from '@/lib/initial-data';
+import type { Habit } from '@/lib/types';
+import { initialHabits } from '@/lib/initial-data';
 import Header from '@/components/Header';
 import HabitList from '@/components/HabitList';
-import Garden from '@/components/Garden';
 import AiHabitSuggestions from '@/components/AiHabitSuggestions';
 import { useToast } from "@/hooks/use-toast"
 
 export default function Home() {
   const { toast } = useToast();
   const [habits, setHabits] = useState<Habit[]>(initialHabits);
-  const [gardenItems, setGardenItems] = useState<GardenItem[]>(initialGardenItems);
   
   const totalPoints = useMemo(() => {
-    return habits.reduce((sum, habit) => habit.completed ? sum + habit.points : sum, 0) + 
-           gardenItems.filter(item => item.unlocked).reduce((sum, item) => sum - item.cost, 100); // Start with 100 points
-  }, [habits, gardenItems]);
+    return habits.reduce((sum, habit) => habit.completed ? sum + habit.points : sum, 0);
+  }, [habits]);
 
   const handleToggleHabit = (id: number) => {
     let toggledHabit: Habit | undefined;
@@ -58,14 +55,9 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header points={totalPoints} />
       <main className="flex-grow p-4 md:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <HabitList habits={habits} onToggleHabit={handleToggleHabit} />
-            <AiHabitSuggestions habits={habits} onAddHabit={handleAddHabit} />
-          </div>
-          <div className="lg:col-span-1">
-            <Garden items={gardenItems} />
-          </div>
+        <div className="max-w-4xl mx-auto space-y-8">
+          <HabitList habits={habits} onToggleHabit={handleToggleHabit} />
+          <AiHabitSuggestions habits={habits} onAddHabit={handleAddHabit} />
         </div>
       </main>
     </div>

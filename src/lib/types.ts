@@ -8,13 +8,3 @@ export interface Habit {
   streak: number;
   completed: boolean;
 }
-
-export interface GardenItem {
-  id: number;
-  name: string;
-  cost: number;
-  unlocked: boolean;
-  position: { top: string; left: string; };
-  size: { width: string; height: string; };
-  dataAiHint: string;
-}
