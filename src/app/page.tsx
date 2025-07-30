@@ -28,16 +28,42 @@ export default function Home() {
     setIsClient(true);
   }, []);
   
-  // Load from localStorage on initial render
+  // Load from localStorage on initial render and handle daily reset
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedHabits = localStorage.getItem('habits');
       const savedLevel = localStorage.getItem('level');
       const savedPoints = localStorage.getItem('totalPoints');
+      const lastResetDate = localStorage.getItem('lastResetDate');
+      const today = new Date().toDateString();
 
+      let habitsToLoad: Habit[] = [];
       if (savedHabits) {
-        setHabits(JSON.parse(savedHabits));
+        habitsToLoad = JSON.parse(savedHabits);
       }
+      
+      if (lastResetDate !== today) {
+        habitsToLoad = habitsToLoad.map(habit => {
+          const streak = habit.completed ? habit.streak + 1 : 0;
+          return {
+            ...habit,
+            completed: false,
+            currentProgress: 0,
+            timesCompleted: 0,
+            streak: streak,
+          };
+        });
+        localStorage.setItem('lastResetDate', today);
+        if (lastResetDate) { // Only show toast if it's not the very first load
+            toast({
+                title: "A New Day!",
+                description: "Your habits have been reset for today. Let's get started!",
+            });
+        }
+      }
+
+      setHabits(habitsToLoad);
+      
       if (savedLevel) {
         setLevel(JSON.parse(savedLevel));
       }
