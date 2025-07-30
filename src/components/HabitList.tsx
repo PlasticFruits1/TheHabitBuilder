@@ -5,11 +5,12 @@ import { ListTodo, Eye } from 'lucide-react';
 
 interface HabitListProps {
   habits: Habit[];
-  onToggleHabit: (id: number) => void;
+  onUpdateProgress: (id: number, progress: number | 'inc') => void;
+  onSimpleToggle: (id: number) => void;
   isPreview: boolean;
 }
 
-export default function HabitList({ habits, onToggleHabit, isPreview }: HabitListProps) {
+export default function HabitList({ habits, onUpdateProgress, isPreview, onSimpleToggle }: HabitListProps) {
   return (
     <Card className="sketch-border w-full">
       <CardHeader>
@@ -33,7 +34,7 @@ export default function HabitList({ habits, onToggleHabit, isPreview }: HabitLis
         ) : (
           <div className="space-y-4">
             {habits.map((habit) => (
-              <HabitItem key={habit.id} habit={habit} onToggle={onToggleHabit} />
+              <HabitItem key={habit.id} habit={habit} onUpdateProgress={onUpdateProgress} onSimpleToggle={onSimpleToggle}/>
             ))}
           </div>
         )}

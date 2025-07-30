@@ -72,7 +72,7 @@ export default function AiHabitSuggestions({ habits, onAddHabit }: AiHabitSugges
           AI Habit Helper
         </CardTitle>
         <CardDescription className="font-body">
-          Tell me your goals, and I'll suggest some new habits for you!
+          Tell me your goals, and I'll suggest some simple habits for you!
         </CardDescription>
       </CardHeader>
       <CardContent>
