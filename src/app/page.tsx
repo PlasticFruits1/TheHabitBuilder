@@ -6,17 +6,23 @@ import { initialHabits } from '@/lib/initial-data';
 import Header from '@/components/Header';
 import HabitList from '@/components/HabitList';
 import AiHabitSuggestions from '@/components/AiHabitSuggestions';
+import AddHabitForm from '@/components/AddHabitForm';
 import { useToast } from "@/hooks/use-toast"
 
 export default function Home() {
   const { toast } = useToast();
   const [habits, setHabits] = useState<Habit[]>(initialHabits);
+  const [isPreview, setIsPreview] = useState(true);
   
   const totalPoints = useMemo(() => {
     return habits.reduce((sum, habit) => habit.completed ? sum + habit.points : sum, 0);
   }, [habits]);
 
   const handleToggleHabit = (id: number) => {
+    if (isPreview) {
+      setHabits([]);
+      setIsPreview(false);
+    }
     let toggledHabit: Habit | undefined;
     setHabits(
       habits.map((habit) => {
@@ -36,6 +42,10 @@ export default function Home() {
   };
 
   const handleAddHabit = (habitName: string) => {
+    if (isPreview) {
+      setHabits([]);
+      setIsPreview(false);
+    }
     const newHabit: Habit = {
       id: habits.length > 0 ? Math.max(...habits.map(h => h.id)) + 1 : 1,
       name: habitName,
@@ -44,7 +54,7 @@ export default function Home() {
       streak: 0,
       completed: false,
     };
-    setHabits([...habits, newHabit]);
+    setHabits(prevHabits => [...prevHabits, newHabit]);
     toast({
       title: "New Habit Added!",
       description: `"${habitName}" is now in your daily list.`
@@ -56,7 +66,8 @@ export default function Home() {
       <Header points={totalPoints} />
       <main className="flex-grow p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          <HabitList habits={habits} onToggleHabit={handleToggleHabit} />
+          <HabitList habits={habits} onToggleHabit={handleToggleHabit} isPreview={isPreview} />
+          <AddHabitForm onAddHabit={handleAddHabit} />
           <AiHabitSuggestions habits={habits} onAddHabit={handleAddHabit} />
         </div>
       </main>
