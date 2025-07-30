@@ -28,7 +28,7 @@ export default function HabitList({ habits, onUpdateProgress, isPreview, onSimpl
         )}
       </CardHeader>
       <CardContent>
-        {habits.length === 0 && !isPreview ? (
+        {habits.length === 0 ? (
            <div className="text-center text-muted-foreground font-body py-8">
             <p className="text-xl mb-2">Your habit list is empty.</p>
             <p>Add a new habit below to get started!</p>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import type { Habit } from '@/lib/types';
-import { initialHabits } from '@/lib/initial-data';
 import Header from '@/components/Header';
 import HabitList from '@/components/HabitList';
 import AiHabitSuggestions from '@/components/AiHabitSuggestions';
@@ -17,8 +16,7 @@ const POINTS_PER_LEVEL = 50;
 
 export default function Home() {
   const { toast } = useToast();
-  const [habits, setHabits] = useState<Habit[]>(initialHabits);
-  const [isPreview, setIsPreview] = useState(true);
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [level, setLevel] = useState(1);
   const [totalPoints, setTotalPoints] = useState(0);
   const [isLevelUpDialogOpen, setIsLevelUpDialogOpen] = useState(false);
@@ -29,6 +27,35 @@ export default function Home() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+  
+  // Load from localStorage on initial render
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedHabits = localStorage.getItem('habits');
+      const savedLevel = localStorage.getItem('level');
+      const savedPoints = localStorage.getItem('totalPoints');
+
+      if (savedHabits) {
+        setHabits(JSON.parse(savedHabits));
+      }
+      if (savedLevel) {
+        setLevel(JSON.parse(savedLevel));
+      }
+      if (savedPoints) {
+        setTotalPoints(JSON.parse(savedPoints));
+      }
+    }
+  }, []);
+
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    if (isClient) {
+      localStorage.setItem('habits', JSON.stringify(habits));
+      localStorage.setItem('level', JSON.stringify(level));
+      localStorage.setItem('totalPoints', JSON.stringify(totalPoints));
+    }
+  }, [habits, level, totalPoints, isClient]);
+
 
   const [playHabitComplete] = useSound('/sounds/complete.mp3', { volume: 0.7, disabled: !isClient });
   const [playLevelUp] = useSound('/sounds/levelup.mp3', { volume: 0.8, disabled: !isClient });
@@ -53,15 +80,17 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const calculatedPoints = calculatePoints(habits);
-    setTotalPoints(calculatedPoints);
+    if (isClient) {
+        const calculatedPoints = calculatePoints(habits);
+        setTotalPoints(calculatedPoints);
 
-    const newLevel = Math.floor(calculatedPoints / POINTS_PER_LEVEL) + 1;
-    if (newLevel > level) {
-      setLevel(newLevel);
-      handleLevelUp();
+        const newLevel = Math.floor(calculatedPoints / POINTS_PER_LEVEL) + 1;
+        if (newLevel > level) {
+        setLevel(newLevel);
+        handleLevelUp();
+        }
     }
-  }, [habits, level]);
+  }, [habits, level, isClient]);
   
   const handleLevelUp = async () => {
     if (playLevelUp) playLevelUp();
@@ -76,10 +105,6 @@ export default function Home() {
   };
 
   const handleUpdateHabitProgress = (id: number, progress: number | 'inc') => {
-     if (isPreview) {
-      setHabits([]);
-      setIsPreview(false);
-    }
     let updatedHabit: Habit | undefined;
     const newHabits = habits.map((habit) => {
       if (habit.id === id) {
@@ -123,10 +148,6 @@ export default function Home() {
   };
 
   const handleAddHabit = (data: AddHabitFormData) => {
-    if (isPreview) {
-      setHabits([]);
-      setIsPreview(false);
-    }
     const newHabit: Habit = {
       id: habits.length > 0 ? Math.max(...habits.map(h => h.id)) + 1 : 1,
       name: data.name,
@@ -148,10 +169,6 @@ export default function Home() {
   };
   
   const handleSimpleToggle = (id: number) => {
-    if (isPreview) {
-      setHabits([]);
-      setIsPreview(false);
-    }
     const newHabits = habits.map(habit => {
       if (habit.id === id) {
         const isNowComplete = !habit.completed;
@@ -199,7 +216,7 @@ export default function Home() {
           <HabitList 
             habits={habits} 
             onUpdateProgress={handleUpdateHabitProgress} 
-            isPreview={isPreview} 
+            isPreview={false}
             onSimpleToggle={handleSimpleToggle}
             onDelete={handleDeleteHabit}
             onEdit={(habit) => setEditingHabit(habit)}
