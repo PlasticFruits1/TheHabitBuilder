@@ -113,9 +113,11 @@ export default function HabitItem({
             </div>
              {isSimpleHabit && <SimpleCheckbox checked={habit.completed} onToggle={() => onSimpleToggle(habit.id)} />}
         </div>
-
-        {isProgressHabit && <ProgressTracker habit={habit} onUpdate={onUpdateProgress} />}
-        {isFrequencyHabit && <FrequencyTracker habit={habit} onUpdate={onUpdateProgress} />}
+        
+        <div className="space-y-3">
+          {isProgressHabit && <ProgressTracker habit={habit} onUpdate={onUpdateProgress} />}
+          {isFrequencyHabit && <FrequencyTracker habit={habit} onUpdate={onUpdateProgress} />}
+        </div>
         
       </div>
        <div className="absolute top-2 right-2">

@@ -38,16 +38,17 @@ export default function Home() {
       if (habit.completed) {
         return sum + habit.points;
       }
+      // Combine point calculation for potentially mixed habits
+      let habitPoints = 0;
       if (habit.target && habit.currentProgress) {
-        // Award points proportionally for progress-based habits
         const progress = Math.min(habit.currentProgress, habit.target);
-        return sum + Math.floor((progress / habit.target) * habit.points);
+        habitPoints += Math.floor((progress / habit.target) * habit.points);
       }
       if (habit.frequency && habit.timesCompleted) {
-         // Award points for each completion of frequency-based habits
-        return sum + (habit.timesCompleted * habit.points);
+         habitPoints += (habit.timesCompleted * habit.points);
       }
-      return sum;
+      // For simple habits, no partial points. Only completed gives points.
+      return sum + habitPoints;
     }, 0);
   }
 
@@ -85,18 +86,22 @@ export default function Home() {
         let newProgress = habit.currentProgress ?? 0;
         let newTimesCompleted = habit.timesCompleted ?? 0;
         
+        updatedHabit = {...habit};
+
         if (habit.target !== undefined) { // Progress-based habit
           newProgress = progress === 'inc' ? newProgress + 1 : progress as number;
-          updatedHabit = { ...habit, currentProgress: Math.min(newProgress, habit.target) };
-
-        } else if (habit.frequency !== undefined) { // Frequency-based habit
+          updatedHabit.currentProgress = Math.min(newProgress, habit.target);
+        }
+        
+        if (habit.frequency !== undefined) { // Frequency-based habit
           newTimesCompleted = progress === 'inc' ? newTimesCompleted + 1 : progress as number;
-          updatedHabit = { ...habit, timesCompleted: Math.min(newTimesCompleted, habit.frequency) };
+          updatedHabit.timesCompleted = Math.min(newTimesCompleted, habit.frequency);
         }
         
         if (updatedHabit) {
-            const isNowComplete = (updatedHabit.target && updatedHabit.currentProgress && updatedHabit.currentProgress >= updatedHabit.target) || 
-                                (updatedHabit.frequency && updatedHabit.timesCompleted && updatedHabit.timesCompleted >= updatedHabit.frequency);
+            const isProgressComplete = !updatedHabit.target || (updatedHabit.currentProgress && updatedHabit.currentProgress >= updatedHabit.target);
+            const isFrequencyComplete = !updatedHabit.frequency || (updatedHabit.timesCompleted && updatedHabit.timesCompleted >= updatedHabit.frequency);
+            const isNowComplete = isProgressComplete && isFrequencyComplete;
 
             if (isNowComplete && !habit.completed) {
                 updatedHabit.completed = true;
@@ -110,7 +115,6 @@ export default function Home() {
             }
              return updatedHabit;
         }
-
       }
       return habit;
     });
@@ -130,11 +134,11 @@ export default function Home() {
       points: 10,
       streak: 0,
       completed: false,
-      target: data.trackingType === 'progress' ? data.target : undefined,
-      currentProgress: data.trackingType === 'progress' ? 0 : undefined,
-      unit: data.trackingType === 'progress' ? data.unit : (data.trackingType === 'frequency' ? 'times' : undefined),
-      frequency: data.trackingType === 'frequency' ? data.frequency : undefined,
-      timesCompleted: data.trackingType === 'frequency' ? 0 : undefined,
+      target: data.trackProgress ? data.target : undefined,
+      currentProgress: data.trackProgress ? 0 : undefined,
+      unit: data.trackProgress ? data.unit : (data.trackFrequency ? 'times' : undefined),
+      frequency: data.trackFrequency ? data.frequency : undefined,
+      timesCompleted: data.trackFrequency ? 0 : undefined,
     };
     setHabits(prevHabits => [...prevHabits, newHabit]);
     toast({
@@ -166,7 +170,7 @@ export default function Home() {
   }
 
   const handleAddSimpleHabit = (name: string) => {
-    handleAddHabit({ name, trackingType: 'simple' });
+    handleAddHabit({ name, trackProgress: false, trackFrequency: false });
   }
 
   const handleDeleteHabit = (id: number) => {

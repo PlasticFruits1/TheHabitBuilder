@@ -14,19 +14,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { Habit } from '@/lib/types';
 import { useEffect } from 'react';
 
 const editHabitSchema = z.object({
   name: z.string().min(3, { message: 'Habit name must be at least 3 characters.' }),
-  trackingType: z.enum(['simple', 'progress', 'frequency']).default('simple'),
+  trackProgress: z.boolean().default(false),
+  trackFrequency: z.boolean().default(false),
   target: z.coerce.number().min(1).optional(),
   unit: z.string().optional(),
   frequency: z.coerce.number().min(1).optional(),
 }).refine(data => {
-    if (data.trackingType === 'progress' && (data.target === undefined || !data.unit)) {
+    if (data.trackProgress && (data.target === undefined || !data.unit)) {
         return false;
     }
     return true;
@@ -34,7 +35,7 @@ const editHabitSchema = z.object({
     message: "Target and unit are required for progress-based habits.",
     path: ['target'],
 }).refine(data => {
-    if (data.trackingType === 'frequency' && data.frequency === undefined) {
+    if (data.trackFrequency && data.frequency === undefined) {
         return false;
     }
     return true;
@@ -42,6 +43,7 @@ const editHabitSchema = z.object({
     message: "Frequency is required for frequency-based habits.",
     path: ['frequency'],
 });
+
 
 export type EditHabitFormData = z.infer<typeof editHabitSchema>;
 
@@ -53,31 +55,27 @@ interface EditHabitDialogProps {
 }
 
 export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }: EditHabitDialogProps) {
-    
-  const getTrackingType = (h: Habit) => {
-    if (h.target !== undefined) return 'progress';
-    if (h.frequency !== undefined) return 'frequency';
-    return 'simple';
-  }
 
   const form = useForm<EditHabitFormData>({
     resolver: zodResolver(editHabitSchema),
     defaultValues: {
       name: habit.name || '',
-      trackingType: getTrackingType(habit),
-      target: habit.target || undefined,
+      trackProgress: habit.target !== undefined,
+      trackFrequency: habit.frequency !== undefined,
+      target: habit.target,
       unit: habit.unit || '',
-      frequency: habit.frequency || undefined
+      frequency: habit.frequency
     },
   });
   
   useEffect(() => {
     form.reset({
         name: habit.name || '',
-        trackingType: getTrackingType(habit),
-        target: habit.target || undefined,
+        trackProgress: habit.target !== undefined,
+        trackFrequency: habit.frequency !== undefined,
+        target: habit.target,
         unit: habit.unit || '',
-        frequency: habit.frequency || undefined
+        frequency: habit.frequency
     })
   }, [habit, form])
 
@@ -85,28 +83,29 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
     const updatedHabit: Habit = {
         ...habit,
         name: values.name,
-        target: values.trackingType === 'progress' ? values.target : undefined,
-        currentProgress: values.trackingType === 'progress' ? habit.currentProgress || 0 : undefined,
-        unit: values.trackingType === 'progress' ? values.unit : (values.trackingType === 'frequency' ? 'times' : undefined),
-        frequency: values.trackingType === 'frequency' ? values.frequency : undefined,
-        timesCompleted: values.trackingType === 'frequency' ? habit.timesCompleted || 0 : undefined,
+        target: values.trackProgress ? values.target : undefined,
+        currentProgress: values.trackProgress ? habit.currentProgress || 0 : undefined,
+        unit: values.trackProgress ? values.unit : (values.trackFrequency ? 'times' : undefined),
+        frequency: values.trackFrequency ? values.frequency : undefined,
+        timesCompleted: values.trackFrequency ? habit.timesCompleted || 0 : undefined,
     }
     // Clear out other tracking properties when switching type
     if (updatedHabit.target === undefined) {
         updatedHabit.currentProgress = undefined;
+        if (updatedHabit.frequency === undefined) {
+            updatedHabit.unit = undefined;
+        }
     }
     if (updatedHabit.frequency === undefined) {
         updatedHabit.timesCompleted = undefined;
-    }
-    if (values.trackingType === 'simple') {
-        updatedHabit.unit = undefined;
     }
 
 
     onEditHabit(updatedHabit);
   };
   
-  const trackingType = form.watch('trackingType');
+  const trackProgress = form.watch('trackProgress');
+  const trackFrequency = form.watch('trackFrequency');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -137,45 +136,49 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
                 )}
                 />
                 
-                <FormField
-                control={form.control}
-                name="trackingType"
-                render={({ field }) => (
-                    <FormItem className="space-y-3">
+                <div className="space-y-3">
                     <FormLabel>How do you want to track it?</FormLabel>
-                    <FormControl>
-                        <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-col sm:flex-row gap-4"
-                        >
-                        <FormItem className="flex items-center space-x-3 space-y-0">
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <FormField
+                        control={form.control}
+                        name="trackProgress"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 sketch-border flex-1">
                             <FormControl>
-                            <RadioGroupItem value="simple" />
+                                <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                />
                             </FormControl>
-                            <FormLabel className="font-normal">Simple (Done / Not Done)</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
+                            <div className="space-y-1 leading-none">
+                                <FormLabel>Track Progress</FormLabel>
+                            </div>
+                            </FormItem>
+                        )}
+                        />
+                        <FormField
+                        control={form.control}
+                        name="trackFrequency"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 sketch-border flex-1">
                             <FormControl>
-                            <RadioGroupItem value="progress" />
+                                <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                                />
                             </FormControl>
-                            <FormLabel className="font-normal">Track Progress (e.g., quantity)</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                            <RadioGroupItem value="frequency" />
-                            </FormControl>
-                            <FormLabel className="font-normal">Track Frequency (e.g., times per day)</FormLabel>
-                        </FormItem>
-                        </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
+                            <div className="space-y-1 leading-none">
+                                <FormLabel>Track Frequency</FormLabel>
+                            </div>
+                            </FormItem>
+                        )}
+                        />
+                    </div>
+                </div>
+
 
                 <AnimatePresence>
-                {trackingType === 'progress' && (
+                {trackProgress && (
                     <motion.div 
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -211,7 +214,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
                     </motion.div>
                 )}
 
-                {trackingType === 'frequency' && (
+                {trackFrequency && (
                     <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
