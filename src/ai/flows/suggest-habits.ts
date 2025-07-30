@@ -9,6 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/googleai';
 import {z} from 'genkit';
 
 const SuggestHabitsInputSchema = z.object({
@@ -52,7 +53,9 @@ const suggestHabitsFlow = ai.defineFlow(
     outputSchema: SuggestHabitsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(input, {
+      model: googleAI.model('gemini-2.0-pro'),
+    });
     return output!;
   }
 );
