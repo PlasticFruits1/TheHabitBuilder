@@ -88,7 +88,7 @@ export default function HabitItem({
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        'flex items-start gap-4 p-4 rounded-lg transition-all relative',
+        'flex items-start gap-4 p-4 rounded-lg transition-all',
         habit.completed ? 'bg-primary/20' : 'bg-card'
       )}
     >
@@ -98,7 +98,7 @@ export default function HabitItem({
       
       <div className="flex-grow space-y-2">
         <div className="flex justify-between items-start">
-            <div>
+            <div className="pr-8">
                 <p className="font-body font-semibold text-lg">{habit.name}</p>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
@@ -120,7 +120,7 @@ export default function HabitItem({
         </div>
         
       </div>
-       <div className="absolute top-2 right-2">
+       <div className="flex-shrink-0">
          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
