@@ -90,13 +90,14 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
         timesCompleted: values.trackFrequency ? habit.timesCompleted || 0 : undefined,
     }
     // Clear out other tracking properties when switching type
-    if (updatedHabit.target === undefined) {
+    if (!values.trackProgress) {
+        updatedHabit.target = undefined;
         updatedHabit.currentProgress = undefined;
-        if (updatedHabit.frequency === undefined) {
+        if (!values.trackFrequency) {
             updatedHabit.unit = undefined;
         }
     }
-    if (updatedHabit.frequency === undefined) {
+    if (!values.trackFrequency) {
         updatedHabit.timesCompleted = undefined;
     }
 
@@ -180,6 +181,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
                 <AnimatePresence>
                 {trackProgress && (
                     <motion.div 
+                        key="progress-tracker-edit"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
@@ -216,6 +218,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
 
                 {trackFrequency && (
                     <motion.div
+                        key="frequency-tracker-edit"
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}

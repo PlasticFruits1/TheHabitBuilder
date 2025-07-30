@@ -137,6 +137,7 @@ export default function AddHabitForm({ onAddHabit }: AddHabitFormProps) {
             <AnimatePresence>
             {trackProgress && (
                 <motion.div 
+                    key="progress-tracker"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
@@ -173,6 +174,7 @@ export default function AddHabitForm({ onAddHabit }: AddHabitFormProps) {
 
             {trackFrequency && (
                  <motion.div
+                    key="frequency-tracker"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
