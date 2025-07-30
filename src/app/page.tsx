@@ -22,9 +22,14 @@ export default function Home() {
   const [totalPoints, setTotalPoints] = useState(0);
   const [isLevelUpDialogOpen, setIsLevelUpDialogOpen] = useState(false);
   const [motivationalQuote, setMotivationalQuote] = useState('');
+  const [isClient, setIsClient] = useState(false);
 
-  const [playHabitComplete] = useSound('/sounds/complete.mp3', { volume: 0.7 });
-  const [playLevelUp] = useSound('/sounds/levelup.mp3', { volume: 0.8 });
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const [playHabitComplete] = useSound('/sounds/complete.mp3', { volume: 0.7, disabled: !isClient });
+  const [playLevelUp] = useSound('/sounds/levelup.mp3', { volume: 0.8, disabled: !isClient });
 
 
   useEffect(() => {
@@ -39,7 +44,7 @@ export default function Home() {
   }, [habits, level]);
   
   const handleLevelUp = async () => {
-    playLevelUp();
+    if (playLevelUp) playLevelUp();
     try {
       const { quote } = await getMotivationalQuote();
       setMotivationalQuote(quote);
@@ -68,7 +73,7 @@ export default function Home() {
 
     if (toggledHabit) {
       if (toggledHabit.completed) {
-        playHabitComplete();
+        if (playHabitComplete) playHabitComplete();
       }
       toast({
         title: toggledHabit.completed ? "Habit Completed!" : "Habit Undone",
