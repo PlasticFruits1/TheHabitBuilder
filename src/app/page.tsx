@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { Habit } from '@/lib/types';
 import { initialHabits } from '@/lib/initial-data';
 import Header from '@/components/Header';
@@ -10,6 +10,7 @@ import AddHabitForm from '@/components/AddHabitForm';
 import LevelUpDialog from '@/components/LevelUpDialog';
 import { useToast } from "@/hooks/use-toast"
 import { getMotivationalQuote } from '@/ai/flows/get-motivational-quote';
+import useSound from 'use-sound';
 
 const POINTS_PER_LEVEL = 50;
 
@@ -21,6 +22,10 @@ export default function Home() {
   const [totalPoints, setTotalPoints] = useState(0);
   const [isLevelUpDialogOpen, setIsLevelUpDialogOpen] = useState(false);
   const [motivationalQuote, setMotivationalQuote] = useState('');
+
+  const [playHabitComplete] = useSound('/sounds/complete.mp3', { volume: 0.7 });
+  const [playLevelUp] = useSound('/sounds/levelup.mp3', { volume: 0.8 });
+
 
   useEffect(() => {
     const calculatedPoints = habits.reduce((sum, habit) => habit.completed ? sum + habit.points : sum, 0);
@@ -34,6 +39,7 @@ export default function Home() {
   }, [habits, level]);
   
   const handleLevelUp = async () => {
+    playLevelUp();
     try {
       const { quote } = await getMotivationalQuote();
       setMotivationalQuote(quote);
@@ -61,6 +67,9 @@ export default function Home() {
     setHabits(newHabits);
 
     if (toggledHabit) {
+      if (toggledHabit.completed) {
+        playHabitComplete();
+      }
       toast({
         title: toggledHabit.completed ? "Habit Completed!" : "Habit Undone",
         description: toggledHabit.completed ? `You earned ${toggledHabit.points} points!` : `You lost ${toggledHabit.points} points.`,
