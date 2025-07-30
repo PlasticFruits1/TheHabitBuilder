@@ -54,7 +54,7 @@ const suggestHabitsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input, {
-      model: googleAI.model('gemini-2.0-pro'),
+      model: googleAI.model('gemini-1.5-flash'),
     });
     return output!;
   }
