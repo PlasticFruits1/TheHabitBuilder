@@ -8,9 +8,11 @@ interface HabitListProps {
   onUpdateProgress: (id: number, progress: number | 'inc') => void;
   onSimpleToggle: (id: number) => void;
   isPreview: boolean;
+  onDelete: (id: number) => void;
+  onEdit: (habit: Habit) => void;
 }
 
-export default function HabitList({ habits, onUpdateProgress, isPreview, onSimpleToggle }: HabitListProps) {
+export default function HabitList({ habits, onUpdateProgress, isPreview, onSimpleToggle, onDelete, onEdit }: HabitListProps) {
   return (
     <Card className="sketch-border w-full">
       <CardHeader>
@@ -34,7 +36,14 @@ export default function HabitList({ habits, onUpdateProgress, isPreview, onSimpl
         ) : (
           <div className="space-y-4">
             {habits.map((habit) => (
-              <HabitItem key={habit.id} habit={habit} onUpdateProgress={onUpdateProgress} onSimpleToggle={onSimpleToggle}/>
+              <HabitItem 
+                key={habit.id} 
+                habit={habit} 
+                onUpdateProgress={onUpdateProgress} 
+                onSimpleToggle={onSimpleToggle}
+                onDelete={onDelete}
+                onEdit={onEdit}
+              />
             ))}
           </div>
         )}

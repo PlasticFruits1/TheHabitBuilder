@@ -11,6 +11,7 @@ import LevelUpDialog from '@/components/LevelUpDialog';
 import { useToast } from "@/hooks/use-toast"
 import { getMotivationalQuote } from '@/ai/flows/get-motivational-quote';
 import useSound from 'use-sound';
+import EditHabitDialog from '@/components/EditHabitDialog';
 
 const POINTS_PER_LEVEL = 50;
 
@@ -23,6 +24,7 @@ export default function Home() {
   const [isLevelUpDialogOpen, setIsLevelUpDialogOpen] = useState(false);
   const [motivationalQuote, setMotivationalQuote] = useState('');
   const [isClient, setIsClient] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -167,12 +169,37 @@ export default function Home() {
     handleAddHabit({ name, trackingType: 'simple' });
   }
 
+  const handleDeleteHabit = (id: number) => {
+    setHabits(prev => prev.filter(h => h.id !== id));
+    toast({
+      title: "Habit Removed",
+      description: "The habit has been deleted from your list.",
+      variant: 'destructive'
+    })
+  }
+
+  const handleEditHabit = (updatedHabit: Habit) => {
+    setHabits(prev => prev.map(h => h.id === updatedHabit.id ? updatedHabit : h));
+    toast({
+      title: "Habit Updated!",
+      description: `"${updatedHabit.name}" has been successfully updated.`
+    })
+    setEditingHabit(null);
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <Header points={totalPoints} level={level} />
       <main className="flex-grow p-4 md:p-8">
         <div className="max-w-4xl mx-auto space-y-8">
-          <HabitList habits={habits} onUpdateProgress={handleUpdateHabitProgress} isPreview={isPreview} onSimpleToggle={handleSimpleToggle} />
+          <HabitList 
+            habits={habits} 
+            onUpdateProgress={handleUpdateHabitProgress} 
+            isPreview={isPreview} 
+            onSimpleToggle={handleSimpleToggle}
+            onDelete={handleDeleteHabit}
+            onEdit={(habit) => setEditingHabit(habit)}
+          />
           <AddHabitForm onAddHabit={handleAddHabit} />
           <AiHabitSuggestions habits={habits} onAddHabit={handleAddSimpleHabit} />
         </div>
@@ -183,6 +210,14 @@ export default function Home() {
         level={level}
         quote={motivationalQuote}
       />
+      {editingHabit && (
+        <EditHabitDialog
+          habit={editingHabit}
+          onEditHabit={handleEditHabit}
+          isOpen={!!editingHabit}
+          onClose={() => setEditingHabit(null)}
+        />
+      )}
     </div>
   );
 }

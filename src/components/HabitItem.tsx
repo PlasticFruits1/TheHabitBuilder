@@ -1,11 +1,17 @@
 'use client';
 
-import { Check, Flame, GlassWater, BookOpen, Sunrise, Footprints, Pencil, Sparkles, Plus, Minus, Repeat } from 'lucide-react';
+import { Check, Flame, GlassWater, BookOpen, Sunrise, Footprints, Pencil, Sparkles, Plus, Repeat, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import type { Habit } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const iconMap: { [key: string]: React.ElementType } = {
   'glass-water': GlassWater,
@@ -55,7 +61,19 @@ const FrequencyTracker = ({ habit, onUpdate }: { habit: Habit, onUpdate: (id: nu
 )
 
 
-export default function HabitItem({ habit, onUpdateProgress, onSimpleToggle }: { habit: Habit; onUpdateProgress: (id: number, progress: 'inc') => void; onSimpleToggle: (id: number) => void; }) {
+export default function HabitItem({ 
+    habit, 
+    onUpdateProgress, 
+    onSimpleToggle,
+    onDelete,
+    onEdit
+}: { 
+    habit: Habit; 
+    onUpdateProgress: (id: number, progress: 'inc') => void; 
+    onSimpleToggle: (id: number) => void;
+    onDelete: (id: number) => void;
+    onEdit: (habit: Habit) => void;
+}) {
   const Icon = iconMap[habit.icon] || Sparkles;
 
   const isProgressHabit = habit.target !== undefined;
@@ -70,7 +88,7 @@ export default function HabitItem({ habit, onUpdateProgress, onSimpleToggle }: {
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        'flex items-start gap-4 p-4 rounded-lg transition-all',
+        'flex items-start gap-4 p-4 rounded-lg transition-all relative',
         habit.completed ? 'bg-primary/20' : 'bg-card'
       )}
     >
@@ -99,6 +117,26 @@ export default function HabitItem({ habit, onUpdateProgress, onSimpleToggle }: {
         {isProgressHabit && <ProgressTracker habit={habit} onUpdate={onUpdateProgress} />}
         {isFrequencyHabit && <FrequencyTracker habit={habit} onUpdate={onUpdateProgress} />}
         
+      </div>
+       <div className="absolute top-2 right-2">
+         <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(habit)}>
+              <Edit className="mr-2 h-4 w-4" />
+              <span>Edit</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onDelete(habit.id)} className="text-destructive focus:text-destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </motion.div>
   );
