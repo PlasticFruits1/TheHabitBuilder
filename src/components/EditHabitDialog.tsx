@@ -63,21 +63,21 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
   const form = useForm<EditHabitFormData>({
     resolver: zodResolver(editHabitSchema),
     defaultValues: {
-      name: habit.name,
+      name: habit.name || '',
       trackingType: getTrackingType(habit),
-      target: habit.target,
-      unit: habit.unit,
-      frequency: habit.frequency
+      target: habit.target || undefined,
+      unit: habit.unit || '',
+      frequency: habit.frequency || undefined
     },
   });
   
   useEffect(() => {
     form.reset({
-        name: habit.name,
+        name: habit.name || '',
         trackingType: getTrackingType(habit),
-        target: habit.target,
-        unit: habit.unit,
-        frequency: habit.frequency
+        target: habit.target || undefined,
+        unit: habit.unit || '',
+        frequency: habit.frequency || undefined
     })
   }, [habit, form])
 
@@ -91,6 +91,18 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
         frequency: values.trackingType === 'frequency' ? values.frequency : undefined,
         timesCompleted: values.trackingType === 'frequency' ? habit.timesCompleted || 0 : undefined,
     }
+    // Clear out other tracking properties when switching type
+    if (updatedHabit.target === undefined) {
+        updatedHabit.currentProgress = undefined;
+    }
+    if (updatedHabit.frequency === undefined) {
+        updatedHabit.timesCompleted = undefined;
+    }
+    if (values.trackingType === 'simple') {
+        updatedHabit.unit = undefined;
+    }
+
+
     onEditHabit(updatedHabit);
   };
   
@@ -177,7 +189,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
                             <FormItem className="flex-grow">
                             <FormLabel>Target</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="e.g., 8" className="sketch-border" {...field} />
+                                <Input type="number" placeholder="e.g., 8" className="sketch-border" {...field} value={field.value ?? ''}/>
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -190,7 +202,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
                             <FormItem className="flex-grow">
                             <FormLabel>Unit</FormLabel>
                             <FormControl>
-                                <Input placeholder="e.g., 'glasses' or 'km'" className="sketch-border" {...field} />
+                                <Input placeholder="e.g., 'glasses' or 'km'" className="sketch-border" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -212,7 +224,7 @@ export default function EditHabitDialog({ habit, onEditHabit, isOpen, onClose }:
                             <FormItem>
                             <FormLabel>How many times per day?</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="e.g., 3" className="sketch-border" {...field} />
+                                <Input type="number" placeholder="e.g., 3" className="sketch-border" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
